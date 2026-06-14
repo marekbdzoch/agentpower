@@ -29,6 +29,7 @@ The MVP stores:
 - owner margin,
 - minimum price,
 - final sell price.
+- power day ledger credits and debits.
 
 ## Formula
 
@@ -69,6 +70,21 @@ In production:
 - reconcile paid sessions,
 - track refunds/disputes,
 - calculate revenue, model cost, and margin.
+
+## Power Ledger
+
+The ledger tracks runtime as a balance, not just as money:
+
+- `credit_purchase`: supporter buys power days,
+- `debit_agent_run`: agent workflow consumes runtime,
+- `credit_adjustment`: maintainer adds power manually,
+- `debit_adjustment`: maintainer removes power manually.
+
+This makes the core loop visible:
+
+```text
+money in -> power days -> agent work -> pull requests -> maintainer-approved progress
+```
 
 ## Why This Matters
 

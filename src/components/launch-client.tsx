@@ -454,7 +454,7 @@ function ProjectPanel({
         <div className="mt-5 grid gap-3 md:grid-cols-4">
           <Metric label="Balance" value={formatMoney(dashboard.balanceCents)} light />
           <Metric label="Tasks" value={dashboard.tasks.length.toString()} light />
-          <Metric label="Agent runs" value={dashboard.agentRuns.length.toString()} light />
+          <Metric label="Power balance" value={`${dashboard.powerBalanceDays}d`} light />
           <Metric label="Power day" value={formatMoney(powerPricing.pricePerDayCents)} light />
         </div>
       </div>
@@ -666,6 +666,15 @@ function ProjectPanel({
                 <Metric label="Base cost" value={formatMoney(powerPricing.baseCostCents)} light />
                 <Metric label="Sell price" value={formatMoney(powerPricing.pricePerDayCents)} light />
               </div>
+              <div className="rounded-md bg-[#e7f3ed] px-3 py-2">
+                <div className="flex justify-between gap-3">
+                  <span className="font-semibold">Available power</span>
+                  <span className="font-mono text-xs text-[#1f7a55]">{dashboard.powerBalanceDays} days</span>
+                </div>
+                <p className="mt-1 text-[#526158]">
+                  Purchases add power days. Agent workflows consume fractional power days based on included runs.
+                </p>
+              </div>
 
               <form action={(formData) => onModelProviderConnect(project.id, project.slug, formData)} className="grid gap-2">
                 <label className="grid gap-1 font-medium">
@@ -779,6 +788,22 @@ function ProjectPanel({
                   Update pricing
                 </button>
               </form>
+              <div className="grid gap-2 border-t border-[#dfded1] pt-3">
+                <p className="font-semibold">Power ledger</p>
+                {dashboard.powerLedger.length === 0 ? (
+                  <p className="text-[#627064]">No power day purchases or agent spend yet.</p>
+                ) : (
+                  dashboard.powerLedger.slice(0, 5).map((entry) => (
+                    <div key={entry.id} className="flex justify-between gap-3 rounded-md bg-[#f7f7f2] px-3 py-2">
+                      <span className="text-[#526158]">{entry.description}</span>
+                      <span className={entry.powerDays >= 0 ? "font-semibold text-[#1f7a55]" : "font-semibold text-[#b84d31]"}>
+                        {entry.powerDays > 0 ? "+" : ""}
+                        {entry.powerDays}d
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </Section>
 

@@ -42,13 +42,14 @@ export default async function ProjectPage({
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-7">
+        <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-8">
           <Card icon={<Banknote className="size-5" />} label="Treasury" value={formatMoney(dashboard.balanceCents)} />
           <Card icon={<Bot className="size-5" />} label="Agent runs" value={dashboard.agentRuns.length.toString()} />
           <Card icon={<GitPullRequest className="size-5" />} label="Pull requests" value={dashboard.pullRequests.length.toString()} />
           <Card icon={<Cpu className="size-5" />} label="Compute" value={dashboard.computeContributions.length.toString()} />
           <Card icon={<CreditCard className="size-5" />} label="Gateway" value={activeGateway?.provider ?? "mock"} />
           <Card icon={<Banknote className="size-5" />} label="Power day" value={formatMoney(dashboard.powerPricing.pricePerDayCents)} />
+          <Card icon={<Bot className="size-5" />} label="Available power" value={`${dashboard.powerBalanceDays}d`} />
           <Card icon={<ShieldCheck className="size-5" />} label="Autonomy" value={`Level ${dashboard.project.autonomyLevel}`} />
         </div>
 
@@ -82,6 +83,13 @@ export default async function ProjectPage({
               </p>
             </div>
             <div className="rounded-md border border-[#dfded1] p-4">
+              <p className="font-mono text-xs text-[#627064]">Available power</p>
+              <p className="mt-1 text-2xl font-semibold">{dashboard.powerBalanceDays} days</p>
+              <p className="mt-2 text-sm text-[#526158]">
+                Runtime balance available for upcoming agent work.
+              </p>
+            </div>
+            <div className="rounded-md border border-[#dfded1] p-4">
               <p className="font-mono text-xs text-[#627064]">Active model</p>
               <p className="mt-1 text-2xl font-semibold">
                 {dashboard.modelProviders.find((provider) => provider.enabled)?.provider ?? "openai"}
@@ -91,6 +99,20 @@ export default async function ProjectPage({
               </p>
             </div>
           </div>
+          {dashboard.powerLedger.length > 0 && (
+            <div className="mt-4 grid gap-2">
+              <h3 className="font-semibold">Power Ledger</h3>
+              {dashboard.powerLedger.slice(0, 5).map((entry) => (
+                <div key={entry.id} className="flex justify-between gap-3 rounded-md border border-[#dfded1] px-3 py-2 text-sm">
+                  <span className="text-[#526158]">{entry.description}</span>
+                  <span className={entry.powerDays >= 0 ? "font-semibold text-[#1f7a55]" : "font-semibold text-[#b84d31]"}>
+                    {entry.powerDays > 0 ? "+" : ""}
+                    {entry.powerDays}d
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="rounded-lg border border-[#d8d7c9] bg-white p-6">

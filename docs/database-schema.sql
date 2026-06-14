@@ -165,3 +165,15 @@ create table power_pricing (
   price_per_day_cents integer not null,
   updated_at timestamptz not null default now()
 );
+
+create table power_ledger (
+  id uuid primary key,
+  project_id uuid not null references projects(id) on delete cascade,
+  entry_type text not null,
+  power_days numeric not null,
+  amount_cents integer,
+  ref_type text,
+  ref_id uuid,
+  description text not null,
+  created_at timestamptz not null default now()
+);

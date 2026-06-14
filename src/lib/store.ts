@@ -13,6 +13,7 @@ import type {
   PaymentGatewayConnection,
   PaymentGatewayMode,
   PaymentGatewayProvider,
+  PowerLedgerEntry,
   PowerPricing,
   Project,
   ProjectDashboard,
@@ -38,6 +39,7 @@ const emptyDb = (): AppDatabase => ({
   paymentGateways: [],
   modelProviders: [],
   powerPricing: [],
+  powerLedger: [],
 });
 
 async function readDb(): Promise<AppDatabase> {
@@ -75,6 +77,7 @@ function normalizeDb(db: Partial<AppDatabase>): AppDatabase {
     paymentGateways: db.paymentGateways ?? [],
     modelProviders: db.modelProviders ?? [],
     powerPricing: db.powerPricing ?? [],
+    powerLedger: db.powerLedger ?? [],
   };
 }
 
@@ -122,6 +125,10 @@ export async function getProjectDashboard(slug: string): Promise<ProjectDashboar
     .filter((provider) => provider.projectId === project.id)
     .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const powerPricing = getPowerPricing(db, project.id);
+  const powerLedger = db.powerLedger
+    .filter((entry) => entry.projectId === project.id)
+    .toSorted((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const powerBalanceDays = calculatePowerBalance(powerLedger);
 
   return {
     project,
@@ -148,6 +155,8 @@ export async function getProjectDashboard(slug: string): Promise<ProjectDashboar
       .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     modelProviders,
     powerPricing,
+    powerLedger,
+    powerBalanceDays,
     balanceCents,
   };
 }
@@ -230,9 +239,23 @@ export async function addDonation(projectId: string, amountCents: number, contri
       description: `Mock Stripe donation from ${donation.contributorName}`,
       createdAt: now,
     };
+    const powerPricing = getPowerPricing(db, projectId);
+    const powerDays = roundPowerDays(amountCents / powerPricing.pricePerDayCents);
+    const powerEntry: PowerLedgerEntry = {
+      id: crypto.randomUUID(),
+      projectId,
+      entryType: "credit_purchase",
+      powerDays,
+      amountCents,
+      refType: "donation",
+      refId: donation.id,
+      description: `${donation.contributorName} bought ${powerDays} power day${powerDays === 1 ? "" : "s"}`,
+      createdAt: now,
+    };
 
     db.donations.push(donation);
     db.treasury.push(entry);
+    db.powerLedger.push(powerEntry);
     return donation;
   });
 }
@@ -460,6 +483,16 @@ export async function enqueueTask(taskId: string) {
       description: `Agent runtime for issue #${task.githubIssueNumber}`,
       createdAt: now,
     });
+    db.powerLedger.push({
+      id: crypto.randomUUID(),
+      projectId: task.projectId,
+      entryType: "debit_agent_run",
+      powerDays: -estimatePowerDaysForAgentRuns(db, task.projectId, 3),
+      refType: "agent_run",
+      refId: builderRun.id,
+      description: `Agent workflow consumed runtime for issue #${task.githubIssueNumber}`,
+      createdAt: now,
+    });
 
     return { task, pullRequest, report };
   });
@@ -607,6 +640,19 @@ function calculatePowerPricing(pricing: PowerPricing): PowerPricing {
     ...pricing,
     pricePerDayCents: Math.max(pricing.minimumPriceCents, calculated),
   };
+}
+
+function estimatePowerDaysForAgentRuns(db: AppDatabase, projectId: string, runCount: number) {
+  const pricing = getPowerPricing(db, projectId);
+  return roundPowerDays(runCount / pricing.includedAgentRuns);
+}
+
+function calculatePowerBalance(entries: PowerLedgerEntry[]) {
+  return roundPowerDays(entries.reduce((sum, entry) => sum + entry.powerDays, 0));
+}
+
+function roundPowerDays(value: number) {
+  return Math.round(value * 100) / 100;
 }
 
 function getActivePaymentGateway(db: AppDatabase, projectId: string): PaymentGatewayConnection {

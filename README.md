@@ -263,6 +263,7 @@ The host/admin of a self-hosted project can configure the economics of their age
 - platform margin,
 - owner margin,
 - minimum sell price.
+- power day ledger credits and debits.
 
 AgentPower calculates:
 
@@ -302,6 +303,7 @@ API Route Handlers
   |-- /api/projects/[id]/payment-gateways
   |-- /api/projects/[id]/model-providers
   |-- /api/projects/[id]/power-pricing
+  |-- /api/projects/[id]/power-ledger
   |-- /api/projects/[id]/compute-contributions
   |
 Domain Layer
@@ -330,6 +332,7 @@ The MVP uses local adapters with production-shaped boundaries:
 | Additional payment gateways | Provider-ready `PaymentGatewayConnection` model |
 | OpenAI/Anthropic model setup | Project-level `ModelProviderConnection` records |
 | Runtime pricing | Project-level `PowerPricing` records |
+| Runtime balance | Project-level `PowerLedgerEntry` records |
 | Docker sandbox | Recorded agent runs and cost ledger |
 | Worker marketplace | Compute contribution pledge records |
 
@@ -443,6 +446,14 @@ POST /api/projects/[id]/power-pricing
 ```
 
 Updates included agent runs, platform margin, owner margin, and minimum sell price.
+
+### Power Ledger
+
+```http
+GET /api/projects/[id]/power-ledger
+```
+
+Returns bought/spent power days, current runtime balance, and recent ledger entries.
 
 ## Key Files
 

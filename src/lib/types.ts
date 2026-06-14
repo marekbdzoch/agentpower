@@ -171,6 +171,18 @@ export type PowerPricing = {
   updatedAt: string;
 };
 
+export type PowerLedgerEntry = {
+  id: string;
+  projectId: string;
+  entryType: "credit_purchase" | "credit_adjustment" | "debit_agent_run" | "debit_adjustment";
+  powerDays: number;
+  amountCents?: number;
+  refType?: "donation" | "agent_run" | "manual";
+  refId?: string;
+  description: string;
+  createdAt: string;
+};
+
 export type TreasuryEntry = {
   id: string;
   projectId: string;
@@ -204,6 +216,7 @@ export type AppDatabase = {
   paymentGateways: PaymentGatewayConnection[];
   modelProviders: ModelProviderConnection[];
   powerPricing: PowerPricing[];
+  powerLedger: PowerLedgerEntry[];
 };
 
 export type ProjectDashboard = {
@@ -219,5 +232,7 @@ export type ProjectDashboard = {
   paymentGateways: PaymentGatewayConnection[];
   modelProviders: ModelProviderConnection[];
   powerPricing: PowerPricing;
+  powerLedger: PowerLedgerEntry[];
+  powerBalanceDays: number;
   balanceCents: number;
 };

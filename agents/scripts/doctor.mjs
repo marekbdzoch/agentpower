@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { access, readFile } from "node:fs/promises";
+import { validateAgentPowerManifest } from "../../src/lib/manifest/validator.mjs";
 
 const required = [
   "agentpower.config.json",
@@ -24,7 +25,16 @@ for (const file of required) {
 
 try {
   const config = JSON.parse(await readFile("agentpower.config.json", "utf8"));
-  console.log(`ok   config project=${config.project.name} payment=${config.payments.provider} agent=${config.agents.provider}`);
+  const validation = validateAgentPowerManifest(config);
+  if (!validation.valid) {
+    failed = true;
+    console.log("fail manifest validation");
+    for (const issue of validation.issues) {
+      console.log(`     - ${issue}`);
+    }
+  } else {
+    console.log(`ok   config project=${config.project.name} payment=${config.payments.provider} agent=${config.agents.provider}`);
+  }
 } catch (error) {
   failed = true;
   console.log(`fail config parse: ${error.message}`);
