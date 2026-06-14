@@ -1,0 +1,43 @@
+{
+  "$schema": "https://agentpower.dev/schema/agentpower.schema.json",
+  "project": {
+    "name": "AgentPower",
+    "autonomyLevel": 1,
+    "maintainerGate": "required"
+  },
+  "payments": {
+    "provider": "stripe",
+    "mode": "test",
+    "allowProjectOwnedGateway": true
+  },
+  "agents": {
+    "provider": "openai-compatible",
+    "runtime": "self-hosted",
+    "directory": "agents",
+    "selfHosted": true
+  },
+  "economy": {
+    "unitName": "power_day",
+    "includedAgentRuns": 8,
+    "estimatedModelCostCents": 900,
+    "platformMarginPercent": 20,
+    "ownerMarginPercent": 30,
+    "minimumPriceCents": 1500,
+    "recommendedPriceCents": 1500
+  },
+  "reviewGate": {
+    "requireCi": true,
+    "requireHumanReviewForHighRisk": true,
+    "protectedAreas": [
+      "license",
+      "billing",
+      "auth",
+      "permissions",
+      "production-secrets",
+      "deployment-credentials",
+      "encryption",
+      "database-migrations",
+      "security-policy"
+    ]
+  }
+}

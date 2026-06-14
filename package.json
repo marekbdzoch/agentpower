@@ -1,14 +1,35 @@
 {
   "name": "agentpower",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "description": "Open-source toolkit for adding community-funded AI agent workflows to software projects.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "agentpower": "./bin/agentpower.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "docs",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md",
+    ".env.example"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cli:test": "node bin/agentpower.mjs init --yes --target .tmp-agentpower-install --force",
+    "agentpower:doctor": "node agents/scripts/doctor.mjs",
+    "agentpower:worker": "node agents/worker.mjs"
   },
   "dependencies": {
+    "lucide-react": "^1.18.0",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4"
